@@ -1,0 +1,72 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+    <!-- Hazelcast instance configuration skeleton. -->
+    <bean id="hazelcastGlobalConfig" class="com.hazelcast.config.Config"
+          abstract="true">
+        <!-- Hazelcast instance name should be overriden. -->
+        <!-- Hazelcast common properties. -->
+        <property name="properties">
+            <props>
+                <prop key="hazelcast.jmx">true</prop>
+                <prop key="hazelcast.jmx.detailed">true</prop>
+            </props>
+        </property>
+        <!-- Hazelcast group name and password should be overrider. -->
+        <!-- Hazelcast TCP based network configuration. -->
+        <property name="networkConfig" ref="hazelcastNetworkConfig"/>
+        <!-- Hazelcast map configurations should be overriden by each module. -->
+        <property name="managementCenterConfig" ref="hazelcastManagementCenterConfig"/>
+    </bean>
+
+    <!-- Hazelcast management center config. -->
+    <bean id="hazelcastManagementCenterConfig" class="com.hazelcast.config.ManagementCenterConfig">
+        <property name="enabled" value="true"/>
+        <property name="url" value="http://localhost:8080/mancenter-3.2"/>
+    </bean>
+
+    <!-- Hazelcast TCP based network configuration. -->
+    <bean id="hazelcastNetworkConfig" class="com.hazelcast.config.NetworkConfig">
+        <property name="port" value="5701"/>
+        <property name="portAutoIncrement" value="true"/>
+        <property name="join" ref="hazelcastJoinConfig"/>
+    </bean>
+
+    <!-- Hazelcast join config. -->
+    <bean id="hazelcastJoinConfig" class="com.hazelcast.config.JoinConfig">
+        <property name="multicastConfig" ref="hazelcastMulticastConfig"/>
+        <property name="tcpIpConfig" ref="hazelcastTcpIpConfig"/>
+    </bean>
+
+    <!-- Hazelcast multicast config. -->
+    <bean id="hazelcastMulticastConfig" class="com.hazelcast.config.MulticastConfig">
+        <property name="enabled" value="false"/>
+    </bean>
+
+    <!-- Hazelcast TCP IP config. -->
+    <bean id="hazelcastTcpIpConfig" class="com.hazelcast.config.TcpIpConfig">
+        <property name="enabled" value="true"/>
+        <property name="members" value="localhost"/>
+    </bean>
+
+    <!-- Hazelcast default distributed map configuration skeleton. -->
+    <bean id="hazelcastDefaultMapConfig" class="com.hazelcast.config.MapConfig"
+          abstract="true">
+        <!-- Name should be overriden. -->
+        <property name="backupCount" value="0"/>
+        <property name="maxIdleSeconds" value="0"/>
+        <property name="timeToLiveSeconds" value="0"/>
+        <property name="maxSizeConfig">
+            <bean class="com.hazelcast.config.MaxSizeConfig">
+                <property name="size" value="0"/>
+            </bean>
+        </property>
+        <property name="evictionPercentage" value="30"/>
+        <property name="readBackupData" value="true"/>
+        <property name="evictionPolicy" value="NONE"/>
+        <property name="mergePolicy" value="com.hazelcast.map.merge.PassThroughMergePolicy"/>
+    </bean>
+
+</beans>

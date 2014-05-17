@@ -1,0 +1,1 @@
+create table if not exists presentation(cache_key varchar(255), cache_value varchar(255));

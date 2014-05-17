@@ -1,0 +1,105 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.1.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <import resource="hazelcast-cache.xml"/>
+
+    <!-- Hazelcast instance based on default config with specific map configs. -->
+    <bean id="presentationHazelcastInstance"
+          class="com.hazelcast.core.Hazelcast"
+          factory-method="newHazelcastInstance"
+          destroy-method="shutdown">
+        <constructor-arg ref="presentationHazelcastConfig"/>
+    </bean>
+
+    <!-- Hazelcast configuration. -->
+    <bean id="presentationHazelcastConfig" parent="hazelcastGlobalConfig">
+        <property name="instanceName" ref="presentationHazelcastInstanceName"/>
+        <property name="groupConfig" ref="presentationHazelcastGroupConfig"/>
+        <property name="networkConfig" ref="presentationHazelcastNetworkConfig"/>
+        <property name="mapConfigs" ref="presentationHazelcastMapConfigs"/>
+        <property name="executorConfigs" ref="presentationHazelcastExecutorConfigs"/>
+    </bean>
+
+    <!-- Hazelcast instance name. -->
+    <bean id="presentationHazelcastInstanceName" class="java.lang.String">
+        <constructor-arg index="0" value="HazelcastPresentation"/>
+    </bean>
+
+    <!-- Hazelcast group config. -->
+    <bean id="presentationHazelcastGroupConfig" class="com.hazelcast.config.GroupConfig">
+        <property name="name" value="PresentationClusterName"/>
+        <property name="password" value="PresentationClusterPassword"/>
+    </bean>
+
+    <!-- Hazelcast network config. -->
+    <bean id="presentationHazelcastNetworkConfig" parent="hazelcastNetworkConfig">
+        <property name="port" value="5801"/>
+    </bean>
+
+    <!-- Hazelcast specific map configs for our presentation. -->
+    <util:map id="presentationHazelcastMapConfigs">
+        <entry key="presentationCache" value-ref="presentationHazelcastDistributedCacheConfig"/>
+        <entry key="writeThroughPresentationCache" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
+    </util:map>
+
+    <!-- Hazelcast specific cache configs. -->
+    <bean id="presentationHazelcastDistributedCacheConfig" class="com.hazelcast.config.MapConfig" parent="hazelcastDefaultMapConfig">
+        <property name="name" value="presentationCache"/>
+        <property name="backupCount" value="1"/>
+        <property name="maxIdleSeconds" value="600" />
+    </bean>
+
+    <bean id="writeThroughPresentationHazelcastCacheConfig" class="com.hazelcast.config.MapConfig" parent="hazelcastDefaultMapConfig">
+        <property name="name" value="writeThroughPresentationCache"/>
+        <property name="backupCount" value="1"/>
+        <property name="mapStoreConfig" ref="writeThroughPresentationHazelcastMapStoreConfig"/>
+    </bean>
+
+    <!-- Hazelcast map store config. -->
+    <bean id="writeThroughPresentationHazelcastMapStoreConfig" class="com.hazelcast.config.MapStoreConfig">
+        <property name="className" value="com.lohika.hazelcastpresentation.cache.HazelcastMapStore"/>
+        <property name="properties" ref="writeThroughPresentationHazelcastMapStoreConfigProperties"/>
+        <property name="initialLoadMode" value="LAZY"/>
+        <property name="writeDelaySeconds" value="0"/>
+    </bean>
+
+    <!-- Hazelcast map store config properties for write-through cache. -->
+    <util:map id="writeThroughPresentationHazelcastMapStoreConfigProperties">
+        <entry key="template" value-ref="namedParameterJdbcTemplate"/>
+    </util:map>
+
+    <!-- Hazelcast presentation distributed cache. -->
+    <bean id="presentationHazelcastDistributedCache"
+          factory-bean="presentationHazelcastInstance"
+          factory-method="getMap"
+          lazy-init="true">
+        <constructor-arg value="presentationCache"/>
+    </bean>
+
+    <!-- Hazelcast write-through presentation distributed cache. -->
+    <bean id="writeThroughPresentationHazelcastDistributedCache"
+          factory-bean="presentationHazelcastInstance"
+          factory-method="getMap"
+          lazy-init="true">
+        <constructor-arg value="writeThroughPresentationCache"/>
+    </bean>
+
+    <!-- Hazelcast executor service. -->
+    <util:map id="presentationHazelcastExecutorConfigs">
+        <entry key="presentationExecutor" value-ref="presentationHazelcastExecutorConfig"/>
+    </util:map>
+
+    <bean id="presentationHazelcastExecutorConfig" class="com.hazelcast.config.ExecutorConfig">
+        <property name="poolSize" value="5"/>
+    </bean>
+
+    <bean id="presentationHazelcastExecutorService"
+          factory-bean="presentationHazelcastInstance"
+          factory-method="getExecutorService"
+          lazy-init="true">
+        <constructor-arg value="presentationExecutor"/>
+    </bean>
+
+</beans>

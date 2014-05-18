@@ -1,10 +1,16 @@
-package com.lohika.hazelcastpresentation.cache;
+package com.lohika.hazelcastpresentation.controller;
 
 import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.Resource;
+
+import com.lohika.hazelcastpresentation.cache.manager.DistributedCacheManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +27,21 @@ public class HazelcastController implements BeanFactoryAware {
 
     private ConcurrentMap<String, String> cache;
 
+    @Value("${hazelcastpresentation.cacheBeanToUse}")
+    private String cacheBeanToUse;
+
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-//        this.cache = (ConcurrentMap<String, String>) beanFactory.getBean("presentationHazelcastDistributedCache");
-        this.cache = (ConcurrentMap<String, String>) beanFactory.getBean("writeThroughPresentationHazelcastDistributedCache");
+        try {
+            this.cache = (ConcurrentMap<String, String>) beanFactory.getBean(this.cacheBeanToUse);
+        } catch (NoSuchBeanDefinitionException noSuchBeanDefinitionException) {
+            /* Creating cache on the fly.
+              Pay attention that 'default' map config key is going to be used in this case. */
+            DistributedCacheManager cacheManager = (DistributedCacheManager) beanFactory.getBean(
+                "presentationHazelcastDistributedCacheManager");
+
+            this.cache = cacheManager.getCache(this.cacheBeanToUse);
+        }
     }
 
     @RequestMapping(value = "/{key}", method = RequestMethod.GET)

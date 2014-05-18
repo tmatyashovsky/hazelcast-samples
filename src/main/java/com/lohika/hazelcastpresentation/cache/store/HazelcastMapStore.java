@@ -1,4 +1,4 @@
-package com.lohika.hazelcastpresentation.cache;
+package com.lohika.hazelcastpresentation.cache.store;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,16 +30,17 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
     private final Logger logger = LoggerFactory.getLogger(HazelcastMapStore.class);
 
     private NamedParameterJdbcTemplate template;
+    private String tableName;
 
-    private final String STORE_SQL = "INSERT INTO presentation (cache_key, cache_value) " +
+    private final String STORE_SQL = "INSERT INTO :tableName (cache_key, cache_value) " +
         "VALUES (:key, :value);";
-    private final String DELETE_SQL = "DELETE FROM presentation " +
+    private final String DELETE_SQL = "DELETE FROM :tableName " +
         "WHERE cache_key = :key;";
-    private final String LOAD_SQL = "SELECT cache_value FROM presentation " +
+    private final String LOAD_SQL = "SELECT cache_value FROM :tableName " +
         "WHERE cache_key = :key;";
-    private final String LOAD_ALL_SQL = "SELECT cache_key, cache_value FROM presentation " +
+    private final String LOAD_ALL_SQL = "SELECT cache_key, cache_value FROM :tableName " +
         "WHERE cache_key IN (:keys);";
-    private final String LOAD_ALL_KEYS_SQL = "SELECT cache_key FROM presentation";
+    private final String LOAD_ALL_KEYS_SQL = "SELECT cache_key FROM :tableName";
 
     @Override
     public void store(String key, String value) {
@@ -49,7 +50,7 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
         parameters.put("key", key);
         parameters.put("value", value);
 
-        this.template.update(STORE_SQL, parameters);
+        this.template.update(STORE_SQL.replace(":tableName", this.tableName), parameters);
     }
 
     @Override
@@ -66,7 +67,7 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("key", key);
 
-        this.template.update(DELETE_SQL, parameters);
+        this.template.update(DELETE_SQL.replace(":tableName", this.tableName), parameters);
     }
 
     @Override
@@ -81,7 +82,8 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("key", key);
 
-        List<String> values = this.template.queryForList(LOAD_SQL, parameters, String.class);
+        List<String> values = this.template.queryForList(LOAD_SQL.replace(":tableName", this.tableName),
+            parameters, String.class);
 
         return values.size() > 0 ? values.get(0) : null;
     }
@@ -91,14 +93,13 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("keys", keys);
 
-        List<Map.Entry<String, String>> results = this.template.query(LOAD_ALL_SQL, parameters,
-            new RowMapper<Map.Entry<String, String>>() {
-
-            public Map.Entry<String, String> mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-                return new AbstractMap.SimpleEntry<String, String>(resultSet.getString("cache_key"),
-                    resultSet.getString("cache_value"));
-            }
-
+        List<Map.Entry<String, String>> results = this.template.query(LOAD_ALL_SQL.replace(":tableName", this.tableName),
+            parameters,
+                new RowMapper<Map.Entry<String, String>>() {
+                    public Map.Entry<String, String> mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+                        return new AbstractMap.SimpleEntry<String, String>(resultSet.getString("cache_key"),
+                            resultSet.getString("cache_value"));
+                    }
         });
 
         Map<String, String> objects = new HashMap<String, String>();
@@ -114,8 +115,8 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
     public Set<String> loadAllKeys() {
         logger.info("Loading all keys from cache");
 
-        return new HashSet<String>(this.template.queryForList(LOAD_ALL_KEYS_SQL, new HashMap<String, Object>(),
-            String.class));
+        return new HashSet<String>(this.template.queryForList(LOAD_ALL_KEYS_SQL.replace(":tableName", this.tableName),
+            new HashMap<String, Object>(), String.class));
     }
 
     @Override
@@ -123,6 +124,7 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
         logger.info("Initializing {} cache", mapName);
 
         this.template = (NamedParameterJdbcTemplate) properties.get("template");
+        this.tableName = mapName;
     }
 
     @Override

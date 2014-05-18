@@ -1,4 +1,4 @@
-package com.lohika.hazelcastpresentation.executor;
+package com.lohika.hazelcastpresentation.task;
 
 import java.io.Serializable;
 

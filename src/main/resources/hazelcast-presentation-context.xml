@@ -42,6 +42,8 @@
     <util:map id="presentationHazelcastMapConfigs">
         <entry key="presentationCache" value-ref="presentationHazelcastDistributedCacheConfig"/>
         <entry key="writeThroughPresentationCache" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
+        <!-- All new dynamically instantiated caches will be write-through caches. -->
+        <entry key="default" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
     </util:map>
 
     <!-- Hazelcast specific cache configs. -->
@@ -59,7 +61,7 @@
 
     <!-- Hazelcast map store config. -->
     <bean id="writeThroughPresentationHazelcastMapStoreConfig" class="com.hazelcast.config.MapStoreConfig">
-        <property name="className" value="com.lohika.hazelcastpresentation.cache.HazelcastMapStore"/>
+        <property name="className" value="com.lohika.hazelcastpresentation.cache.store.HazelcastMapStore"/>
         <property name="properties" ref="writeThroughPresentationHazelcastMapStoreConfigProperties"/>
         <property name="initialLoadMode" value="LAZY"/>
         <property name="writeDelaySeconds" value="0"/>
@@ -100,6 +102,21 @@
           factory-method="getExecutorService"
           lazy-init="true">
         <constructor-arg value="presentationExecutor"/>
+    </bean>
+
+    <!-- Hazelcast cache pre initializer. -->
+    <bean id="presentationHazelcastDistributedCacheStorePreInitializer"
+          class="com.lohika.hazelcastpresentation.cache.manager.hazelcast.HazelcastDistributedCacheStorePreInitializer"
+          lazy-init="true">
+        <property name="template" ref="namedParameterJdbcTemplate" />
+    </bean>
+
+    <!-- Distributed cache manager based on Hazelcast. -->
+    <bean id="presentationHazelcastDistributedCacheManager"
+          class="com.lohika.hazelcastpresentation.cache.manager.hazelcast.HazelcastDistributedCacheManager"
+          lazy-init="true">
+        <constructor-arg ref="presentationHazelcastInstance"/>
+        <constructor-arg ref="presentationHazelcastDistributedCacheStorePreInitializer"/>
     </bean>
 
 </beans>

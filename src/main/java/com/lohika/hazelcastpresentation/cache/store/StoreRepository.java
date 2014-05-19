@@ -16,6 +16,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 /**
+ * Repository used to support write-through cache.
+ *
  * @author taras.matyashovsky
  */
 @Repository

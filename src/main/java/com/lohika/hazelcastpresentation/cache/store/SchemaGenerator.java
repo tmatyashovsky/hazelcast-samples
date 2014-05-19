@@ -8,12 +8,17 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.util.FileCopyUtils;
 
 /**
+ * Generator used to dynamically create table in the Postgres using predefined template script.
+ *
  * @author taras.matyashovsky
  */
 public class SchemaGenerator {
 
     private final String createTableSql;
 
+    /**
+     * Instantiates new generator with one predefined template script.
+     */
     public SchemaGenerator() {
         try {
             createTableSql = loadClassPathResource("create_table_if_not_exists.sql");

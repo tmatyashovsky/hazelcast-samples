@@ -2,20 +2,18 @@ package com.lohika.hazelcastpresentation.controller;
 
 import java.util.concurrent.ConcurrentMap;
 
-import javax.annotation.Resource;
-
-import com.lohika.hazelcastpresentation.cache.manager.DistributedCacheManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.*;
 import org.springframework.web.bind.annotation.*;
+
+import com.lohika.hazelcastpresentation.cache.manager.DistributedCacheManager;
 
 /**
  * @author taras.matyashovsky

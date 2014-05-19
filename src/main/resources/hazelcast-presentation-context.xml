@@ -40,7 +40,7 @@
 
     <!-- Hazelcast specific map configs for our presentation. -->
     <util:map id="presentationHazelcastMapConfigs">
-        <entry key="presentationCache" value-ref="presentationHazelcastDistributedCacheConfig"/>
+        <entry key="inMemoryPresentationCache" value-ref="presentationHazelcastDistributedCacheConfig"/>
         <entry key="writeThroughPresentationCache" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
         <!-- All new dynamically instantiated caches will be write-through caches. -->
         <entry key="default" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
@@ -48,7 +48,7 @@
 
     <!-- Hazelcast specific cache configs. -->
     <bean id="presentationHazelcastDistributedCacheConfig" class="com.hazelcast.config.MapConfig" parent="hazelcastDefaultMapConfig">
-        <property name="name" value="presentationCache"/>
+        <property name="name" value="inMemoryPresentationCache"/>
         <property name="backupCount" value="1"/>
         <property name="maxIdleSeconds" value="600" />
     </bean>
@@ -69,7 +69,7 @@
 
     <!-- Hazelcast map store config properties for write-through cache. -->
     <util:map id="writeThroughPresentationHazelcastMapStoreConfigProperties">
-        <entry key="template" value-ref="namedParameterJdbcTemplate"/>
+        <entry key="repository" value-ref="storeRepository"/>
     </util:map>
 
     <!-- Hazelcast presentation distributed cache. -->
@@ -77,7 +77,7 @@
           factory-bean="presentationHazelcastInstance"
           factory-method="getMap"
           lazy-init="true">
-        <constructor-arg value="presentationCache"/>
+        <constructor-arg value="inMemoryPresentationCache"/>
     </bean>
 
     <!-- Hazelcast write-through presentation distributed cache. -->
@@ -85,7 +85,8 @@
           factory-bean="presentationHazelcastInstance"
           factory-method="getMap"
           lazy-init="true">
-        <constructor-arg value="writeThroughPresentationCache"/>
+        <!-- Should be presentation in order to correspond to the table name. -->
+        <constructor-arg value="presentation"/>
     </bean>
 
     <!-- Hazelcast executor service. -->

@@ -18,7 +18,9 @@
         <!-- Hazelcast TCP based network configuration. -->
         <property name="networkConfig" ref="hazelcastNetworkConfig"/>
         <!-- Hazelcast map configurations should be overriden by each module. -->
-        <property name="managementCenterConfig" ref="hazelcastManagementCenterConfig"/>
+
+        <!-- Uncomment when using management center. -->
+        <!--<property name="managementCenterConfig" ref="hazelcastManagementCenterConfig"/>-->
     </bean>
 
     <!-- Hazelcast management center config. -->

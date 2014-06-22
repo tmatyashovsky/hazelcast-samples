@@ -1,0 +1,13 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+    <!-- Hazelcast distributed cache config. -->
+    <bean id="presentationHazelcastDistributedCacheConfig" class="com.hazelcast.config.MapConfig" parent="hazelcastDefaultMapConfig">
+        <property name="name" value="inMemoryPresentationCache"/>
+        <property name="backupCount" value="1"/>
+        <property name="maxIdleSeconds" value="600" />
+    </bean>
+
+</beans>

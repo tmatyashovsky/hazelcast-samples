@@ -1,9 +1,15 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans-3.1.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util.xsd">
 
     <import resource="hazelcast-cache.xml"/>
+    <import resource="hazelcast-distributed-cache-context.xml"/>
+    <import resource="hazelcast-write-through-distributed-cache-context.xml"/>
+    <import resource="hazelcast-executor-service-context.xml"/>
 
     <!-- Hazelcast instance based on default config with specific map configs. -->
     <bean id="presentationHazelcastInstance"
@@ -41,35 +47,9 @@
     <!-- Hazelcast specific map configs for our presentation. -->
     <util:map id="presentationHazelcastMapConfigs">
         <entry key="inMemoryPresentationCache" value-ref="presentationHazelcastDistributedCacheConfig"/>
-        <entry key="writeThroughPresentationCache" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
+        <entry key="presentation" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
         <!-- All new dynamically instantiated caches will be write-through caches. -->
-        <entry key="default" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
-    </util:map>
-
-    <!-- Hazelcast specific cache configs. -->
-    <bean id="presentationHazelcastDistributedCacheConfig" class="com.hazelcast.config.MapConfig" parent="hazelcastDefaultMapConfig">
-        <property name="name" value="inMemoryPresentationCache"/>
-        <property name="backupCount" value="1"/>
-        <property name="maxIdleSeconds" value="600" />
-    </bean>
-
-    <bean id="writeThroughPresentationHazelcastCacheConfig" class="com.hazelcast.config.MapConfig" parent="hazelcastDefaultMapConfig">
-        <property name="name" value="writeThroughPresentationCache"/>
-        <property name="backupCount" value="1"/>
-        <property name="mapStoreConfig" ref="writeThroughPresentationHazelcastMapStoreConfig"/>
-    </bean>
-
-    <!-- Hazelcast map store config. -->
-    <bean id="writeThroughPresentationHazelcastMapStoreConfig" class="com.hazelcast.config.MapStoreConfig">
-        <property name="className" value="com.lohika.hazelcastpresentation.cache.store.HazelcastMapStore"/>
-        <property name="properties" ref="writeThroughPresentationHazelcastMapStoreConfigProperties"/>
-        <property name="initialLoadMode" value="LAZY"/>
-        <property name="writeDelaySeconds" value="0"/>
-    </bean>
-
-    <!-- Hazelcast map store config properties for write-through cache. -->
-    <util:map id="writeThroughPresentationHazelcastMapStoreConfigProperties">
-        <entry key="repository" value-ref="storeRepository"/>
+        <!--<entry key="default" value-ref="writeThroughPresentationHazelcastCacheConfig"/>-->
     </util:map>
 
     <!-- Hazelcast presentation distributed cache. -->
@@ -90,14 +70,6 @@
     </bean>
 
     <!-- Hazelcast executor service. -->
-    <util:map id="presentationHazelcastExecutorConfigs">
-        <entry key="presentationExecutor" value-ref="presentationHazelcastExecutorConfig"/>
-    </util:map>
-
-    <bean id="presentationHazelcastExecutorConfig" class="com.hazelcast.config.ExecutorConfig">
-        <property name="poolSize" value="5"/>
-    </bean>
-
     <bean id="presentationHazelcastExecutorService"
           factory-bean="presentationHazelcastInstance"
           factory-method="getExecutorService"

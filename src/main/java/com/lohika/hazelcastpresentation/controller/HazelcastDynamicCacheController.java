@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import com.lohika.hazelcastpresentation.cache.manager.DistributedCacheManager;
 
 /**
+ * Controller that handles all requests related to dynamically defined Hazelcast cache.
+ *
  * @author taras.matyashovsky
  */
 @Controller
 @Lazy
 @SuppressWarnings("unchecked")
-public class HazelcastController implements BeanFactoryAware {
+public class HazelcastDynamicCacheController implements BeanFactoryAware {
 
     private ConcurrentMap<String, String> cache;
 
@@ -42,7 +44,7 @@ public class HazelcastController implements BeanFactoryAware {
         }
     }
 
-    @RequestMapping(value = "/{key}", method = RequestMethod.GET)
+    @RequestMapping(value = "/dynamic/{key}", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<String> get(@PathVariable String key) {
         String value = this.cache.get(key);
@@ -54,7 +56,7 @@ public class HazelcastController implements BeanFactoryAware {
         return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
     }
 
-    @RequestMapping(value = "/{key}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/dynamic/{key}", method = RequestMethod.PUT)
     @ResponseBody
     ResponseEntity<String> put(@PathVariable String key, @RequestBody String value) {
         this.cache.put(key, value);

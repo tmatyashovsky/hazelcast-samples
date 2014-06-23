@@ -19,6 +19,7 @@
         <property name="properties" ref="writeThroughPresentationHazelcastMapStoreConfigProperties"/>
         <property name="initialLoadMode" value="LAZY"/>
         <property name="writeDelaySeconds" value="0"/>
+        <!-- Mention about write behind. -->
     </bean>
 
     <!-- Hazelcast map store config properties for write-through cache. -->

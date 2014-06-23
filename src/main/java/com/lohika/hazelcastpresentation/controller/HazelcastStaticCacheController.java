@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class HazelcastStaticCacheController {
 
-    @Resource(name = "writeThroughPresentationHazelcastDistributedCache")
+    @Resource(name = "presentationHazelcastDistributedCache")
     private ConcurrentMap<String, String> cache;
 
     @RequestMapping(value = "/static/{key}", method = RequestMethod.GET)

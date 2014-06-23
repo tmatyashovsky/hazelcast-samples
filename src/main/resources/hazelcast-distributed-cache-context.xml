@@ -8,6 +8,8 @@
         <property name="name" value="inMemoryPresentationCache"/>
         <property name="backupCount" value="1"/>
         <property name="maxIdleSeconds" value="600" />
+        <!-- Show near cache. -->
+        <!--<property name="nearCacheConfig"/>-->
     </bean>
 
 </beans>

@@ -12,7 +12,9 @@ import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiExecutionCallback;
 
+import com.lohika.hazelcastpresentation.cache.processor.UpdateEntryProcessor;
 import com.lohika.hazelcastpresentation.task.HazelcastAverageTask;
+import com.lohika.hazelcastpresentation.task.HazelcastUpdateTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +114,42 @@ public class HazelcastExecutorController {
             };
 
         this.executorService.submitToAllMembers(new HazelcastAverageTask(), callback);
+
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/update/{count}", method = RequestMethod.GET)
+    @ResponseBody
+    ResponseEntity<String> updateViaExecutorService(@PathVariable int count) throws InterruptedException, ExecutionException {
+        IMap<String, Double> cache = this.hazelcastInstance.getMap("updatePresentationHazelcastDistributedCache");
+        cache.destroy();
+        cache = this.hazelcastInstance.getMap("updatePresentationHazelcastDistributedCache");
+
+        for (int i = 0; i < count; i++) {
+            cache.put(UUID.randomUUID().toString(), random.nextDouble() * random.nextInt(100));
+        }
+
+        for (String key: cache.keySet()) {
+            this.executorService.executeOnKeyOwner(new HazelcastUpdateTask(key), key);
+        }
+
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/process/{count}", method = RequestMethod.GET)
+    @ResponseBody
+    ResponseEntity<String> updateViaEntryProcessor(@PathVariable int count) throws InterruptedException, ExecutionException {
+        IMap<String, Double> cache = this.hazelcastInstance.getMap("updatePresentationHazelcastDistributedCache");
+        cache.destroy();
+        cache = this.hazelcastInstance.getMap("updatePresentationHazelcastDistributedCache");
+
+        for (int i = 0; i < count; i++) {
+            cache.put(UUID.randomUUID().toString(), random.nextDouble() * random.nextInt(100));
+        }
+
+        for (String key: cache.keySet()) {
+            cache.executeOnKey(key, new UpdateEntryProcessor());
+        }
 
         return new ResponseEntity<String>(HttpStatus.OK);
     }

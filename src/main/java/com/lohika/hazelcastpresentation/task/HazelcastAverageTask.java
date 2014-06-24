@@ -1,9 +1,6 @@
 package com.lohika.hazelcastpresentation.task;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -18,7 +15,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author taras.matyashovsky
  */
-public class HazelcastAverageTask implements Callable<BigDecimal>, Serializable, HazelcastInstanceAware {
+public class HazelcastAverageTask implements Callable<Double>, Serializable, HazelcastInstanceAware {
 
     private final Logger logger = LoggerFactory.getLogger(HazelcastAverageTask.class);
     private transient HazelcastInstance hazelcastInstance;
@@ -29,23 +26,19 @@ public class HazelcastAverageTask implements Callable<BigDecimal>, Serializable,
     }
 
     @Override
-    public BigDecimal call() throws Exception {
+    public Double call() throws Exception {
         IMap<String, Double> map = this.hazelcastInstance.getMap("averagePresentationHazelcastDistributedCache");
 
-        BigDecimal sum = BigDecimal.ZERO;
+        double sum = 0;
 
-        for (Map.Entry<String, Double> entry : map.entrySet()) {
-            boolean localKey = map.localKeySet().contains(entry.getKey());
-
-            if (localKey) {
-                sum = sum.add(BigDecimal.valueOf(entry.getValue()));
-            }
+        for (String key : map.localKeySet()) {
+            sum += map.get(key);
         }
 
         logger.info("Member {} calculated average for {} local keys", hazelcastInstance.getCluster().getLocalMember(),
             map.localKeySet().size());
 
-        return sum.divide(BigDecimal.valueOf(map.size()), 2, RoundingMode.HALF_UP);
+        return sum / map.localKeySet().size();
     }
 
 }

@@ -1,7 +1,5 @@
 package com.lohika.hazelcastpresentation.controller;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -12,9 +10,6 @@ import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiExecutionCallback;
 
-import com.lohika.hazelcastpresentation.cache.processor.UpdateEntryProcessor;
-import com.lohika.hazelcastpresentation.task.HazelcastAverageTask;
-import com.lohika.hazelcastpresentation.task.HazelcastUpdateTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.lohika.hazelcastpresentation.cache.processor.UpdateEntryProcessor;
+import com.lohika.hazelcastpresentation.task.HazelcastAverageTask;
+import com.lohika.hazelcastpresentation.task.HazelcastUpdateTask;
 import com.lohika.hazelcastpresentation.task.HazelcastSimpleTask;
 import com.lohika.hazelcastpresentation.task.HazelcastVerifyTask;
 
@@ -78,7 +76,7 @@ public class HazelcastExecutorController {
         cache = this.hazelcastInstance.getMap("averagePresentationHazelcastDistributedCache");
 
         for (int i = 0; i < count; i++) {
-            cache.put(UUID.randomUUID().toString(), random.nextDouble() * random.nextInt(100));
+            cache.put(UUID.randomUUID().toString(), random.nextDouble() * random.nextInt(10));
         }
 
         final long startTime = System.currentTimeMillis();
@@ -95,16 +93,15 @@ public class HazelcastExecutorController {
                 public void onComplete(Map<com.hazelcast.core.Member, Object> values) {
                     logger.info("All members have responded with the results, calculating ...");
 
-                    BigDecimal sum = BigDecimal.ZERO;
+                    double sum = 0;
 
                     for (Map.Entry<com.hazelcast.core.Member, Object> entry : values.entrySet()) {
                         logger.info("Member {} provided intermediate result {}", entry.getKey(), entry.getValue());
 
-                        sum = sum.add((BigDecimal) entry.getValue());
+                        sum += (Double) entry.getValue();
                     }
 
-                    logger.info("Final result is {}", sum.divide(BigDecimal.valueOf(values.size()),
-                        2, RoundingMode.HALF_UP));
+                    logger.info("Final result is {}", sum / values.size());
 
                     long stopTime = System.currentTimeMillis();
                     long elapsedTime = stopTime - startTime;

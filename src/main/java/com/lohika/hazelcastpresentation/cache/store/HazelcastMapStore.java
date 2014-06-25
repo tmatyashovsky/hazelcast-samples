@@ -38,45 +38,45 @@ public class HazelcastMapStore implements MapStore<String, String>, MapLoaderLif
     }
 
     @Override
-    public synchronized String load(final String key) {
+    public String load(final String key) {
         return this.storeRepository.load(this.tableName, key);
     }
 
     @Override
-    public synchronized Map<String, String> loadAll(final Collection<String> keys) {
+    public Map<String, String> loadAll(final Collection<String> keys) {
         return this.storeRepository.loadAll(this.tableName, keys);
     }
 
     @Override
-    public synchronized Set<String> loadAllKeys() {
+    public Set<String> loadAllKeys() {
         logger.info("Loading all keys from cache");
 
         return this.storeRepository.loadAllKeys(this.tableName);
     }
 
     @Override
-    public synchronized void store(final String key, final String value) {
+    public void store(final String key, final String value) {
         logger.info("Storing {}/{} to cache", key, value);
 
         this.storeRepository.store(this.tableName, key, value);
     }
 
     @Override
-    public synchronized void storeAll(final Map<String, String> map) {
+    public void storeAll(final Map<String, String> map) {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             this.store(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public synchronized void delete(final String key) {
+    public void delete(final String key) {
         logger.info("Deleting {} from cache", key);
 
         this.storeRepository.delete(this.tableName, key);
     }
 
     @Override
-    public synchronized void deleteAll(final Collection<String> keys) {
+    public void deleteAll(final Collection<String> keys) {
         for (String key : keys) {
             this.delete(key);
         }

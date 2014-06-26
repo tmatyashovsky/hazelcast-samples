@@ -49,6 +49,7 @@
         <entry key="inMemoryPresentationCache" value-ref="presentationHazelcastDistributedCacheConfig"/>
         <entry key="presentation" value-ref="writeThroughPresentationHazelcastCacheConfig"/>
         <!-- All new dynamically instantiated caches will be write-through caches. -->
+        <!-- Comment if you wish to use only in-memory caches. -->
         <!--<entry key="default" value-ref="writeThroughPresentationHazelcastCacheConfig"/>-->
     </util:map>
 

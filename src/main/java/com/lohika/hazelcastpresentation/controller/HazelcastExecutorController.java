@@ -57,7 +57,9 @@ public class HazelcastExecutorController {
     @RequestMapping(value = "/verify", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<String> verify() throws InterruptedException {
-        ConcurrentMap<String, String> cache = this.hazelcastInstance.getMap("presentationHazelcastDistributedCache");
+        ConcurrentMap<String, String> cache = this.hazelcastInstance.getMap("inMemoryPresentationCache");
+        cache.clear();
+        cache = this.hazelcastInstance.getMap("inMemoryPresentationCache");
 
         for (int i = 0; i < 10; i++)
             cache.put(UUID.randomUUID().toString(), "");

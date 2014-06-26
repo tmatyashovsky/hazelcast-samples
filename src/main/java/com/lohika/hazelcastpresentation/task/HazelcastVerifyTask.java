@@ -32,7 +32,7 @@ public class HazelcastVerifyTask implements Runnable, Serializable, HazelcastIns
 
     @Override
     public void run() {
-        IMap map = this.hazelcastInstance.getMap("presentationHazelcastDistributedCache");
+        IMap map = this.hazelcastInstance.getMap("inMemoryPresentationCache");
         boolean localKey = map.localKeySet().contains(key);
 
         logger.info("Key is local: {}", localKey);

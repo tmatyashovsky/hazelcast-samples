@@ -10,6 +10,7 @@ import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiExecutionCallback;
 
+import com.lohika.hazelcastpresentation.task.HazelcastSumTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lohika.hazelcastpresentation.cache.processor.UpdateEntryProcessor;
-import com.lohika.hazelcastpresentation.task.HazelcastAverageTask;
 import com.lohika.hazelcastpresentation.task.HazelcastUpdateTask;
 import com.lohika.hazelcastpresentation.task.HazelcastSimpleTask;
 import com.lohika.hazelcastpresentation.task.HazelcastVerifyTask;
@@ -70,12 +70,12 @@ public class HazelcastExecutorController {
         return new ResponseEntity<String>(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/average/{count}", method = RequestMethod.GET)
+    @RequestMapping(value = "/sum/{count}", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<String> average(@PathVariable int count) throws InterruptedException, ExecutionException {
-        IMap<String, Double> cache = this.hazelcastInstance.getMap("averagePresentationHazelcastDistributedCache");
+    ResponseEntity<String> sum(@PathVariable int count) throws InterruptedException, ExecutionException {
+        IMap<String, Double> cache = this.hazelcastInstance.getMap("sumPresentationHazelcastDistributedCache");
         cache.destroy();
-        cache = this.hazelcastInstance.getMap("averagePresentationHazelcastDistributedCache");
+        cache = this.hazelcastInstance.getMap("sumPresentationHazelcastDistributedCache");
 
         for (int i = 0; i < count; i++) {
             cache.put(UUID.randomUUID().toString(), random.nextDouble() * random.nextInt(10));
@@ -103,7 +103,7 @@ public class HazelcastExecutorController {
                         sum += (Double) entry.getValue();
                     }
 
-                    logger.info("Final result is {}", sum / values.size());
+                    logger.info("Final result is {}", sum);
 
                     long stopTime = System.currentTimeMillis();
                     long elapsedTime = stopTime - startTime;
@@ -112,7 +112,7 @@ public class HazelcastExecutorController {
                 }
             };
 
-        this.executorService.submitToAllMembers(new HazelcastAverageTask(), callback);
+        this.executorService.submitToAllMembers(new HazelcastSumTask(), callback);
 
         return new ResponseEntity<String>(HttpStatus.OK);
     }

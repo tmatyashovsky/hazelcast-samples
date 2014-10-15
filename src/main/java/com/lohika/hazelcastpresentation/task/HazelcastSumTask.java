@@ -11,13 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Task that calculates average of cache values located on local node in not optimal way.
+ * Task that calculates sum of cache values located on local node in not optimal way.
  *
  * @author taras.matyashovsky
  */
-public class HazelcastAverageTask implements Callable<Double>, Serializable, HazelcastInstanceAware {
+public class HazelcastSumTask implements Callable<Double>, Serializable, HazelcastInstanceAware {
 
-    private final Logger logger = LoggerFactory.getLogger(HazelcastAverageTask.class);
+    private final Logger logger = LoggerFactory.getLogger(HazelcastSumTask.class);
     private transient HazelcastInstance hazelcastInstance;
 
     @Override
@@ -27,7 +27,7 @@ public class HazelcastAverageTask implements Callable<Double>, Serializable, Haz
 
     @Override
     public Double call() throws Exception {
-        IMap<String, Double> map = this.hazelcastInstance.getMap("averagePresentationHazelcastDistributedCache");
+        IMap<String, Double> map = this.hazelcastInstance.getMap("sumPresentationHazelcastDistributedCache");
 
         double sum = 0;
 
@@ -35,10 +35,10 @@ public class HazelcastAverageTask implements Callable<Double>, Serializable, Haz
             sum += map.get(key);
         }
 
-        logger.info("Member {} calculated average for {} local keys", hazelcastInstance.getCluster().getLocalMember(),
+        logger.info("Member {} calculated sum for {} local keys", hazelcastInstance.getCluster().getLocalMember(),
             map.localKeySet().size());
 
-        return sum / map.localKeySet().size();
+        return sum;
     }
 
 }
